@@ -9,7 +9,7 @@ for i in "$@"; do
 		#will likely be changing containers
 		base="$temp"
 		ext=${i##*.}
-		echo "base: $base dir: $dir ext: $ext"
+		echo -e "\nbase: $base dir: $dir ext: $ext"
 		
 		#get file information, redirect sterr
 		info="$(ffprobe -i "$i" -hide_banner 2>&1)"
@@ -37,11 +37,10 @@ for i in "$@"; do
 		done <<< "$info"
 		
 		#print out all streams
-		echo -e "\n--- Streams ---"
+		echo -e "\n\t--- Streams ---"
 		echo "Number of video streams: ${#videoArr[@]}"
 		echo "Number of audio streams: ${#audioArr[@]}"
 		echo "Number of subtitle streams: ${#subtitleArr[@]}"
-		
 		for i in "${streamArr[@]}"; do
 			#echo "$i"
 			suff=${i##*#} #cut off everything preceeding
@@ -57,4 +56,5 @@ for i in "$@"; do
 	else
 		echo "$i is not a file"
 	fi
+	echo -e "\n=========="
 done
