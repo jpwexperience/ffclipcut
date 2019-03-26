@@ -46,42 +46,44 @@ for i in "$@"; do
 		#read each line of ffprobe output
 		while read -r line; do
 			#echo "... $line ..."
-			if [[ $line =~ "Stream"(.*) ]]; then
+			if [[ $line =~ (S|s)"tream"(.*) ]]; then
 				#echo "$line"	
 				streamArr+=("$line")
-				if [[ $line =~ (.*)"Video"(.*) ]]; then
+				if [[ $line =~ (.*)(V|v)"ideo"(.*) ]]; then
 					videoArr+=("$line")
+					#this is causing issues if no metadata is available
+					#Possibly skips next stream
 					read line2
-					if [[ $line2 =~  (.*)"Metadata"(.*) ]]; then
+					if [[ $line2 =~  (.*)(M|m)"etadata"(.*) ]]; then
 						#echo "metadata"
 						read line3
-						if [[ $line3 =~  (.*)"title"(.*) ]]; then
+						if [[ $line3 =~  (.*)(T|t)"itle"(.*) ]]; then
 							#echo "$line3"
 							videoMetaArr+=("$line3")
 						fi
 					else
 						videoMetaArr+=("null")
 					fi
-				elif [[ $line =~ (.*)"Audio"(.*) ]]; then
+				elif [[ $line =~ (.*)(A|a)"udio"(.*) ]]; then
 				       	audioArr+=("$line")
 					read line2
-					if [[ $line2 =~  (.*)"Metadata"(.*) ]]; then
+					if [[ $line2 =~  (.*)()M|m("etadata"(.*) ]]; then
 						#echo "metadata"
 						read line3
-						if [[ $line3 =~  (.*)"title"(.*) ]]; then
+						if [[ $line3 =~  (.*)(T|t)"itle"(.*) ]]; then
 							#echo "$line3"
 							audioMetaArr+=("$line3")
 						fi
 					else
 						audioMetaArr+=("null")
 					fi
-				elif [[ $line =~ (.*)"subtitle"(.*) ]]; then
+				elif [[ $line =~ (.*)(S|s)"ubtitle"(.*) ]]; then
 					subtitleArr+=("$line")
 					read line2
-					if [[ $line2 =~  (.*)"Metadata"(.*) ]]; then
+					if [[ $line2 =~  (.*)(M|m)"etadata"(.*) ]]; then
 						#echo "metadata"
 						read line3
-						if [[ $line3 =~  (.*)"title"(.*) ]]; then
+						if [[ $line3 =~  (.*)(T|t)"title"(.*) ]]; then
 							#echo "$line3"
 							subtitleMetaArr+=("$line3")
 						fi
@@ -89,6 +91,7 @@ for i in "$@"; do
 						subtitleMetaArr+=("null")
 					fi
 				else
+					echo "$line"
 					echo "Unidentified Stream"
 				fi	
 
