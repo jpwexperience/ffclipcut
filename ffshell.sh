@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+inRangeCode=0
+in_range () {
+	compare=$(($2-1))
+	echo "$1 and $compare"
+	if (( $1 > $compare )) || (( $1 < -1)); then
+		inRange=0
+	else
+		inRange=1
+	fi
+}
+
 verboseFl=0
 #set flags for input
 for i in "$@"; do
@@ -84,6 +95,7 @@ for i in "$@"; do
 			fi	
 		done <<< "$info"
 		#print out all streams
+
 		echo -e "\n\t--- Streams ---"
 		echo "Number of video streams: ${#videoArr[@]} | Number of audio streams: ${#audioArr[@]} | Number of subtitle streams: ${#subtitleArr[@]}"
 		
@@ -96,13 +108,13 @@ for i in "$@"; do
 		videoChoice=0
 		if (( ${#videoArr[@]} == 0 )); then
 			echo "No Video Tracks"
-			#echo "$videoChoice"
+			videoChoice=-1
 		elif (( ${#videoArr[@]} == 1 )); then
 			#echo "One Video"
-			videoChoice=1
-			#echo "$videoChoice"
+			videoChoice=0
+			echo "${videoArr[videoChoice]}"
 		else
-			count=1
+			count=0
 			echo -e "\n\t-Video Streams-"
 			for i in "${videoArr[@]}"; do
 				firstChunk=${i%%,*}
@@ -118,18 +130,15 @@ for i in "$@"; do
 			done
 			echo "Type the number corresponding to the video stream you want to use, followed by [ENTER]:"
 			read videoChoice
-			echo "videoChoice"
+			in_range $videoChoice ${#videoArr[@]} 
+			echo "$inRangeCode"
 		fi
 		audioChoice=0
 		if (( ${#audioArr[@]} == 0 )); then
-			echo "No Audio Tracks"
-			#echo "$audioChoice"
-		elif (( ${#audioArr[@]} == 1 )); then
-			echo "One Video"
-			audioChoice=1
-			#echo "$audioChoice"
+			echo "No Audio Stream"
+			audioChoice=-1
 		else
-			count=1
+			count=0
 			echo -e "\n\t-Audio Streams-"
 			for i in $(seq 1 ${#audioArr[@]}); do
 				echo $i
@@ -146,17 +155,19 @@ for i in "$@"; do
 				audioTypeArr+=("$type")
 				count=$((count+1))
 			done
-			echo "Type the number corresponding to the audio stream you want to use, followed by [ENTER]:"
+			echo "Type the number corresponding to the audio stream you want to use (-1 for no audio), followed by [ENTER]:"
 			read audioChoice
-			echo "$audioChoice"
+			in_range $audioChoice ${#audioArr[@]} 
+			echo "$inRangeCode"
+			#echo "$audioChoice"
 		fi
 		subtitleChoice=0
 		if (( ${#subtitleArr[@]} == 0 )); then
-			echo "No Subtitle Tracks"
-			subtitleChoice=0
+			echo "No Subtitle Streams"
+			subtitleChoice=-1
 			#echo "$subtitleChoice"
 		else
-			count=1
+			count=0
 			echo -e "\n\t-Subtitle Streams-"
 			for i in "${subtitleArr[@]}"; do
 				firstChunk=${i%%,*}
@@ -172,6 +183,8 @@ for i in "$@"; do
 			done
 			echo "Type the number corresponding to the subtitle stream you want to use (-1 for no subtitles), followed by [ENTER]:"
 			read subtitleChoice
+			in_range $subtitleChoice ${#subtitleArr[@]} 
+			echo "$inRangeCode"
 		fi
 		if (( $subtitleChoice == -1 )); then
 			echo "$subtitleChoice"
