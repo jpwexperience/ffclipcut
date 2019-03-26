@@ -31,8 +31,18 @@ for i in "$@"; do
 		#get file information, redirect sterr
 		info="$(ffprobe -i "$i" -hide_banner 2>&1)"
 		if (( verboseFl == 1 )); then
-			echo "$info"
+			for i in "$info"; do
+				echo "$i"
+			done
 		fi
+		echo -e "\n${#info[@]}"
+		IFS='\n' read -ra ADDR <<< "$info"
+		count=0
+		for i in "${ADDR[@]}"; do
+			echo "$count"
+			count=$((count+1))
+		done
+		echo -e "\n${#arrIN[@]}"
 		streamArr=()
 		videoArr=()
 		videoMetaArr=()
@@ -43,7 +53,17 @@ for i in "$@"; do
 		subtitleArr=()	
 		subtitleTypeArr=()
 		subtitleMetaArr=()
+		ffprobeOut=()
+
+		#$1: Stream Type
+		#$2: 
+		#stream_rip () {
+		
+		#}
+
+		echo "wat"
 		#read each line of ffprobe output
+		#for line in "${ffprobeOut[@]}"; do
 		while read -r line; do
 			#echo "... $line ..."
 			if [[ $line =~ (S|s)"tream"(.*) ]]; then
