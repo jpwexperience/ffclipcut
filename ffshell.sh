@@ -67,7 +67,7 @@ for i in "$@"; do
 				elif [[ $line =~ (.*)(A|a)"udio"(.*) ]]; then
 				       	audioArr+=("$line")
 					read line2
-					if [[ $line2 =~  (.*)()M|m("etadata"(.*) ]]; then
+					if [[ $line2 =~  (.*)(M|m)"etadata"(.*) ]]; then
 						#echo "metadata"
 						read line3
 						if [[ $line3 =~  (.*)(T|t)"itle"(.*) ]]; then
@@ -192,7 +192,7 @@ for i in "$@"; do
 		if (( $subtitleChoice == -1 )); then
 			echo "$subtitleChoice"
 		fi
-	#Skip argument if it isn't a file
+	#Skip argument if it isnt a file
 	else
 		if [[ $i != "-v" ]]; then
 			echo "$i is not a file"
