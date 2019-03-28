@@ -28,7 +28,7 @@ inputSize=0 #number of ffprobe output lines
 inRangeCode=0
 in_range () {
 	compare=$(($2-1))
-	echo "$1 and $compare"
+	#echo "$1 and $compare"
 	if (( $1 > $compare )) || (( $1 < -1)); then
 		#echo "nah man"
 		inRangeCode=0
@@ -40,31 +40,27 @@ in_range () {
 	fi
 }
 
-if [ 1 -eq 0 ]; then
+#if [ 1 -eq 0 ]; then
 #$1: Type of Stream
 #$2: User Input
+sLen=0
 stream_check () {
 	sType=$1
 	if [[ sType == "audio" ]]; then
-		sLen=${#audioArr[@]}
-		sChoice=0
-		sTypeArr=$videoTypeArr
+		sLen=${audioArr[@]}
 	elif [[ sType == "subtitle" ]]; then
-		sLen=${#subtitleArr[@]}	
-		sChoice=0
-		sTypeArr=$videoTypeArr
+		sLen=${subtitleArr[@]}	
 	else [[ sType == "video" ]]
-		sLen=${#videoArr[@]}
-		sChoice=0
-		sTypeArr=$videoTypeArr
+		sLen=${videoArr[@]}
 	fi
-	if (( ${#videoArr[@]} == 0 )); then
+	echo -e "\n--${sLen[0]}--\n"
+	if (( $sLen == 0 )); then
 		echo "No Video Tracks"
 		videoChoice=-1
-	elif (( ${#videoArr[@]} == 1 )); then
+	elif (( $sLen == 1 )); then
 		#echo "One Video"
 		videoChoice=0
-		echo "${videoArr[videoChoice]}"
+		#echo "${videoArr[videoChoice]}"
 	else
 		count=0
 		echo -e "\n\t-Video Streams-"
@@ -87,7 +83,7 @@ stream_check () {
 		videoChoice=inRangeCode
 	fi
 }
-	fi
+	#fi
 
 #set flags for input
 for i in "$@"; do
@@ -126,12 +122,15 @@ for i in "$@"; do
 		subtitleTypeArr=()
 		subtitleMetaArr=()
 		ffprobeOut=()
-
+		ffprobeOutSize=${#ffprobeOut[@]}
 		#read each line of ffprobe output
 		#for line in "${ffprobeOut[@]}"; do
 		while read -r line; do
 			ffprobeOut+=("$line")
+		done <<< "$info"
+		for ((i = 0; i < ${#ffprobeOut[@]}; i++)); do
 			#echo "... $line ..."
+			line=${ffprobeOut[i]}
 			if [[ $line =~ (S|s)"tream"(.*) ]]; then
 				#echo "$line"	
 				streamArr+=("$line")
@@ -141,7 +140,7 @@ for i in "$@"; do
 					#Possibly skips next stream
 				elif [[ $line =~ (.*)(A|a)"udio"(.*) ]]; then
 				       	audioArr+=("$line")
-				elif [[ $line =~ (.*)(S|s)"ubtitle"(.*) ]]; then
+				elif [[ $line =~ (.*)(: )(S|s)"ubtitle"(.*) ]]; then
 					subtitleArr+=("$line")
 				else
 					echo "$line"
@@ -149,7 +148,7 @@ for i in "$@"; do
 				fi	
 
 			fi
-		done <<< "$info"
+		done
 		#print out all streams
 
 		echo -e "\n\t--- Streams ---"
@@ -157,11 +156,8 @@ for i in "$@"; do
 		
 		
 		echo "${#ffprobeOut[@]}"
-		for i in "${ffprobeOut[@]}"; do
-			echo -e "\n"
-		done
 		yooo=0
-		echo "${ffprobeOut[yooo]}"
+		echo -e "\n${ffprobeOut[yooo]}"
 		echo -e "\n\n---------------------------------"
 		#echo "number of stream pieces: $temp"
 		#for i in ${streamArr[@]}; do
@@ -178,21 +174,8 @@ for i in "$@"; do
 		else
 			count=0
 			echo -e "\n\t-Video Streams-"
-			for i in "${videoArr[@]}"; do
-				firstChunk=${i%%,*}
-				mainContent=${firstChunk##*:\ }
-				#echo "$firstChunk"
-				echo "$count) | $firstChunk"
-				type=${mainContent##*:}
-				type=${type#\ }
-				type=${type%%\ *}
-				echo "$type"
-				videoTypeArr+=("$type")
-				count=$((count+1))
-			done
-			echo "Type the number corresponding to the video stream you want to use, followed by [ENTER]:"
 			read videoChoice
-			in_range $videoChoice ${#videoArr[@]} 
+			stream_check "video" "$videoChoice"
 			echo "$inRangeCode"
 		fi
 		audioChoice=0
@@ -220,7 +203,7 @@ for i in "$@"; do
 			echo "Type the number corresponding to the audio stream you want to use (-1 for no audio), followed by [ENTER]:"
 			read audioChoice
 			in_range $audioChoice ${#audioArr[@]} 
-			echo "$inRangeCode"
+			#echo "$inRangeCode"
 			#echo "$audioChoice"
 		fi
 		subtitleChoice=0
@@ -245,8 +228,9 @@ for i in "$@"; do
 			done
 			echo "Type the number corresponding to the subtitle stream you want to use (-1 for no subtitles), followed by [ENTER]:"
 			read subtitleChoice
+			stream_check "video" "$videoChoice"
 			in_range $subtitleChoice ${#subtitleArr[@]} 
-			echo "$inRangeCode"
+			#echo "$inRangeCode"
 		fi
 		if (( $subtitleChoice == -1 )); then
 			echo "$subtitleChoice"
