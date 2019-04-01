@@ -150,6 +150,7 @@ for i in "$@"; do
 		done
 		#will likely be changing containers
 		base="$temp"
+		#running into problems where the name has '.' in it
 		ext=${i##*.}
 		echo -e "\nbase: $base dir: $dir ext: $ext"
 		#get file information, redirect sterr
