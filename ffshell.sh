@@ -140,11 +140,11 @@ for i in "$@"; do
 		base=${i##*/}
 		temp=${base%.*}
 		dir=${i%$base}
-		for i in ls "$dir"*; do
-			subExt=${i##*.}
+		for sub in ls "$dir"*; do
+			subExt=${sub##*.}
 			#echo "$subExt"
 			if [[ $subExt =~ (srt|ass) ]]; then
-				subtitleArr+=("$i")
+				subtitleArr+=("$sub")
 				subtitleTypeArr+=($subExt)
 			fi
 		done
@@ -171,7 +171,7 @@ for i in "$@"; do
 		done <<< "$info"
 		outLen=${#ffprobeOut[@]}
 		for ((i = 0; i < $outLen; i++)); do
-			#echo "... ${ffprobeOut[i]} ..."
+			echo "... ${ffprobeOut[i]} ..."
 			#echo "...$i..."
 			#i=$((i-1))
 			line=${ffprobeOut[i]}
@@ -332,4 +332,17 @@ for i in "$@"; do
 	fi
 	echo -e "\n=========="
 	echo -e "\nVideo Choice: $videoChoice Audio Choice: $audioChoice Subtitle Choice: $subtitleChoice"
+	echo -e "Enter Clip Start Time:"
+	read clipStart
+	#echo "$clipStart"
+	echo -e "Enter Clip End Point:"
+	read clipEnd
+	#echo "$clipEnd"
+	echo -e "Enter CRF Quality Level | Lower Value is Higher Quality\n18-32 is typical range, if burning subtitles may want to use a value around 10\nUse -1 for no re-encoding:"
+	command=""
+	if (( $subtitleChoice >= 0 )); then
+		echo "Burn subs"
+	else
+		echo "No Subs"
+	fi
 done
