@@ -376,7 +376,7 @@ for i in "$@"; do
 			if (( $audioChoice == -1 )); then
 				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -crf $crfIn \"$dir$outputPath\""
 			fi
 
 		fi
