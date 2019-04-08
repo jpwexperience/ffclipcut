@@ -171,7 +171,7 @@ for i in "$@"; do
 		done <<< "$info"
 		outLen=${#ffprobeOut[@]}
 		for ((i = 0; i < $outLen; i++)); do
-			echo "... ${ffprobeOut[i]} ..."
+			#echo "... ${ffprobeOut[i]} ..."
 			#echo "...$i..."
 			#i=$((i-1))
 			line=${ffprobeOut[i]}
@@ -339,10 +339,15 @@ for i in "$@"; do
 	read clipEnd
 	#echo "$clipEnd"
 	echo -e "Enter CRF Quality Level | Lower Value is Higher Quality\n18-32 is typical range, if burning subtitles may want to use a value around 10\nUse -1 for no re-encoding:"
+	read crfIn
+	echo -e "Enter output path with extension:"
+	read outputPath
 	command=""
 	if (( $subtitleChoice >= 0 )); then
 		echo "Burn subs"
 	else
 		echo "No Subs"
+		command=$command"ffmpeg -ss $clipStart -i $base.$ext -t $clipEnd -crf $crfIn $outputPath"
+		echo "$command"
 	fi
 done
