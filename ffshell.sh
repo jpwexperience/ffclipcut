@@ -363,20 +363,20 @@ for i in "$@"; do
 		fi
 		if [[ $subCmdType =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
 			echo "Fast Burn"
-			cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -filter_complex \"[0:v][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -crf $crfIn \"$dir$outputPath\""
+			cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -filter_complex \"[0:v][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -c:a aac -crf $crfIn \"$dir$outputPath\""
 		elif [[ $subCmdType =~ (srt|ass) ]]; then
 			echo "Slow Burn - External"
 			if (( $audioChoice == -1 )); then
 				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$subCmd\" -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$subCmd\" -map 0:a:$audioChoice -c:a aac -crf $crfIn \"$dir$outputPath\""
 			fi
 		else
 			echo "Slow Burn - Internal"
 			if (( $audioChoice == -1 )); then
 				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -map 0:a:$audioChoice -c:a aac -crf $crfIn \"$dir$outputPath\""
 			fi
 
 		fi
@@ -389,7 +389,7 @@ for i in "$@"; do
 			if (( $audioChoice == -1 )); then
 				cmd="ffmpeg -hide_banner -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -map 0:a:$audioChoice -c:a copy -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -map 0:a:$audioChoice -c:a aac -crf $crfIn \"$dir$outputPath\""
 			fi
 		fi
 		echo "$cmd"
