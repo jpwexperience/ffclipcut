@@ -367,16 +367,16 @@ for i in "$@"; do
 		elif [[ $subCmdType =~ (srt|ass) ]]; then
 			echo "Slow Burn - External"
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -crf $crfIn \"$dir$outputPath\""
 			fi
 		else
 			echo "Slow Burn - Internal"
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -crf $crfIn $dir$outputPath"
 			fi
 
 		fi
@@ -387,9 +387,9 @@ for i in "$@"; do
 			cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -c copy \"$dir$outputPath\""
 		else
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -an -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -map 0:a:$audioChoice -c:a copy -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -map 0:a:$audioChoice -c:a copy -crf $crfIn \"$dir$outputPath\""
 			fi
 		fi
 		echo "$cmd"
