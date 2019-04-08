@@ -367,16 +367,16 @@ for i in "$@"; do
 		elif [[ $subCmdType =~ (srt|ass) ]]; then
 			echo "Slow Burn - External"
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$subCmd\" -crf $crfIn \"$dir$outputPath\""
 			fi
 		else
 			echo "Slow Burn - Internal"
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf \"subtitles=$base.$ext:si=$subtitleChoice\" -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -crf $crfIn \"$dir$outputPath\""
 			fi
 
 		fi
