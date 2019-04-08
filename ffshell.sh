@@ -49,7 +49,8 @@ meta_check () {
 	sType=$3
 	entry="null"
 	if (( $index >= $total )); then
-		echo "no available meta"
+		#echo "no available meta"
+		:
 	else
 		#echo "${ffprobeOut[$index]}"	
 		if [[ ${ffprobeOut[$index]} =~ (.*)(M|m)"etadata"(.*) ]]; then
@@ -72,6 +73,9 @@ meta_check () {
 	fi
 }
 
+
+#Would like to incorporate this to cut down on redundancy
+#mainly trying to get functionality working right now
 if [ 1 -eq 0 ]; then
 #$1: Type of Stream
 #$2: User Input
@@ -145,7 +149,7 @@ for i in "$@"; do
 			#echo "$subExt"
 			if [[ $subExt =~ (srt|ass) ]]; then
 				subtitleArr+=("$sub")
-				subtitleTypeArr+=($subExt)
+				subtitleTypeArr+=("external")
 			fi
 		done
 		#will likely be changing containers
@@ -191,8 +195,9 @@ for i in "$@"; do
 					subtitleArr+=("$line")
 					meta_check $i $outLen "subtitle"
 				else
-					echo "$line"
-					echo "Unidentified Stream"
+					#echo "$line"
+					#echo "Unidentified Stream"
+					:
 				fi	
 
 			fi
@@ -335,19 +340,41 @@ for i in "$@"; do
 	echo -e "Enter Clip Start Time:"
 	read clipStart
 	#echo "$clipStart"
-	echo -e "Enter Clip End Point:"
-	read clipEnd
+	echo -e "Enter Clip Duration in Seconds:"
+	read clipDur
 	#echo "$clipEnd"
 	echo -e "Enter CRF Quality Level | Lower Value is Higher Quality\n18-32 is typical range, if burning subtitles may want to use a value around 10\nUse -1 for no re-encoding:"
 	read crfIn
-	echo -e "Enter output path with extension:"
+	echo -e "Enter output name with extension:"
 	read outputPath
 	command=""
 	if (( $subtitleChoice >= 0 )); then
-		echo "Burn subs"
+		#echo "Burn subs"
+		subCmd="${subtitleArr[subtitleChoice]}"
+		subCmdType="${subtitleTypeArr[subtitleChoice]}"
+		if (( $crfIn == -1 )); then
+			crfIn=18
+		fi
+		if [[ $line =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
+			echo "Fast Burn"
+			command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -filter_complex \"[0:v][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -crf $crfIn ./output.mp4"
+		else
+			echo "Slow Burn"
+
+			command="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles= -crf $crfIn $dir$outputPath"
+		fi
+		echo "$command"
 	else
 		echo "No Subs"
-		command=$command"ffmpeg -ss $clipStart -i $base.$ext -t $clipEnd -crf $crfIn $outputPath"
+		if (( crfIn == -1 )); then
+			command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -c copy $dir$outputPath"
+		else
+			if (( $audioChoice == -1 )); then
+				command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -an -crf $crfIn $dir$outputPath"
+			else
+				command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -crf $crfIn $dir$outputPath"
+			fi
+		fi
 		echo "$command"
 	fi
 done
