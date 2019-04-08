@@ -22,6 +22,7 @@ ffprobeOut=() #ffprobe output array. each element is the next line
 verboseFl=0 #full ffprobe output
 
 inputSize=0 #number of ffprobe output lines 
+cmd=""
 
 #$1: User Input 
 #$2: Number of Streams
@@ -347,7 +348,7 @@ for i in "$@"; do
 	read crfIn
 	echo -e "Enter output name with extension:"
 	read outputPath
-	command=""
+	cmd=""
 	if (( $subtitleChoice >= 0 )); then
 		#echo "Burn subs"
 		subCmd="${subtitleArr[subtitleChoice]}"
@@ -355,26 +356,37 @@ for i in "$@"; do
 		if (( $crfIn == -1 )); then
 			crfIn=18
 		fi
-		if [[ $line =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
+		if [[ $subCmdType =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
 			echo "Fast Burn"
-			command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -filter_complex \"[0:v][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -crf $crfIn ./output.mp4"
-		else
+			cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -filter_complex \"[0:v][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -crf $crfIn ./output.mp4"
+		elif [[ $subCmdType == "external" ]]; then
 			echo "Slow Burn"
+			if (( $audioChoice == -1 )); then
+				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$subCmd -an -crf $crfIn $dir$outputPath"
+			else
+				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$subCmd -crf $crfIn $dir$outputPath"
+			fi
+		else
+			if (( $audioChoice == -1 )); then
+				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$base.$ext:$subtitleChoice -an -crf $crfIn $dir$outputPath"
+			else
+				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$base.$ext:$subtitleChoice -crf $crfIn $dir$outputPath"
+			fi
 
-			command="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles= -crf $crfIn $dir$outputPath"
 		fi
-		echo "$command"
+		echo "$cmd"
 	else
 		echo "No Subs"
 		if (( crfIn == -1 )); then
-			command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -c copy $dir$outputPath"
+			cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -c copy $dir$outputPath"
 		else
 			if (( $audioChoice == -1 )); then
-				command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -an -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -an -crf $crfIn $dir$outputPath"
 			else
-				command="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -map 0:a:$audioChoice -c:a copy -crf $crfIn $dir$outputPath"
 			fi
 		fi
-		echo "$command"
+		echo "$cmd"
 	fi
+	$cmd
 done
