@@ -145,14 +145,6 @@ for i in "$@"; do
 		base=${i##*/}
 		temp=${base%.*}
 		dir=${i%$base}
-		for sub in ls "$dir"*; do
-			subExt=${sub##*.}
-			#echo "$subExt"
-			if [[ $subExt =~ (srt|ass) ]]; then
-				subtitleArr+=("$sub")
-				subtitleTypeArr+=("external")
-			fi
-		done
 		#will likely be changing containers
 		base="$temp"
 		#running into problems where the name has '.' in it
@@ -194,6 +186,7 @@ for i in "$@"; do
 					meta_check $i $outLen "audio"
 				elif [[ $line =~ (.*)(: )(S|s)"ubtitle"(.*) ]]; then
 					subtitleArr+=("$line")
+					subtitleTypeArr+=("internal")
 					meta_check $i $outLen "subtitle"
 				else
 					#echo "$line"
@@ -201,6 +194,14 @@ for i in "$@"; do
 					:
 				fi	
 
+			fi
+		done
+		for sub in ls "$dir"*; do
+			subExt=${sub##*.}
+			#echo "$subExt"
+			if [[ $subExt =~ (srt|ass) ]]; then
+				subtitleArr+=("$sub")
+				subtitleTypeArr+=("$subExt")
 			fi
 		done
 		#print out all streams
@@ -319,7 +320,9 @@ for i in "$@"; do
 				type=${type#\ }
 				type=${type%%\ *}
 				#echo "$type"
-				subtitleTypeArr+=("$type")
+				if [[ ${subtitleTypeArr} == "internal" ]]; then
+					subtitleTypeArr[in]="$type"
+				fi
 				count=$((count+1))
 			done
 			echo "Type the number corresponding to the subtitle stream you want to use (-1 for no subtitles), followed by [ENTER]:"
@@ -334,6 +337,7 @@ for i in "$@"; do
 	else
 		if [[ $i != "-v" ]]; then
 			echo "$i is not a file"
+			exit 1
 		fi
 	fi
 	echo -e "\n=========="
@@ -353,24 +357,26 @@ for i in "$@"; do
 		#echo "Burn subs"
 		subCmd="${subtitleArr[subtitleChoice]}"
 		subCmdType="${subtitleTypeArr[subtitleChoice]}"
+		echo "$subCmdType"
 		if (( $crfIn == -1 )); then
 			crfIn=18
 		fi
 		if [[ $subCmdType =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
 			echo "Fast Burn"
-			cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -filter_complex \"[0:v][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -crf $crfIn ./output.mp4"
-		elif [[ $subCmdType == "external" ]]; then
-			echo "Slow Burn"
+			cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -filter_complex \"[0:v][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -crf $crfIn \"$dir$outputPath\""
+		elif [[ $subCmdType =~ (srt|ass) ]]; then
+			echo "Slow Burn - External"
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$subCmd -an -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$subCmd -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -crf $crfIn \"$dir$outputPath\""
 			fi
 		else
+			echo "Slow Burn - Internal"
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$base.$ext:$subtitleChoice -an -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -i $base.$ext -ss $clipStart -t $clipDur -vf subtitles=$base.$ext:$subtitleChoice -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$base.$ext:si=$subtitleChoice\" -crf $crfIn $dir$outputPath"
 			fi
 
 		fi
@@ -378,15 +384,15 @@ for i in "$@"; do
 	else
 		echo "No Subs"
 		if (( crfIn == -1 )); then
-			cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -c copy $dir$outputPath"
+			cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -c copy \"$dir$outputPath\""
 		else
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -an -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -map 0:a:$audioChoice -c:a copy -crf $crfIn $dir$outputPath"
+				cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -map 0:a:$audioChoice -c:a copy -crf $crfIn \"$dir$outputPath\""
 			fi
 		fi
 		echo "$cmd"
 	fi
-	$cmd
+	eval $cmd
 done
