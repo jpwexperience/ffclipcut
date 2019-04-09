@@ -380,7 +380,7 @@ for i in "$@"; do
 			if (( $audioChoice == -1 )); then
 				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -map 0:v:$videoChoice -map 0:a:$audioChoice -pix_fmt yuv420p -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -map 0:a:$audioChoice -c:a aac -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -map 0:v:$videoChoice -map 0:a:$audioChoice -pix_fmt yuv420p -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -c:a aac -crf $crfIn \"$dir$outputPath\""
 			fi
 
 		fi
