@@ -381,7 +381,7 @@ for input in "$@"; do
 		else
 			echo "No Subs"
 			if (( crfIn == -1 )); then
-				cmd="$ffmpeg -ss $clipStart -i $base.$ext -t $clipDur -c copy \"$dir$outputPath\""
+				cmd="$cmd -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -c copy \"$dir$outputPath\""
 			else
 				if (( $audioChoice == -1 )); then
 					cmd="$cmd -hide_banner -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -an -crf $crfIn \"$dir$outputPath\""
@@ -392,19 +392,25 @@ for input in "$@"; do
 		fi
 		echo -e "\n$cmd\n"
 		eval $cmd
-		echo -e "0) Make Another Clip\n1) Continue to Next Input\n2) Exit"
-		read -p "Type the number corresponding to what you want to do next: " nextStep
-		if (( $nextStep == 0 )); then
-			:
-		elif (( $nextStep == 1 )); then
-			mainLoop=0
-		elif (( $nextStep == 2 )); then
-			echo "Exiting"
-			exit 0
-		else
-			echo "Unrecognized Option. Exiting"
-			exit 0
-		fi
+		nextLoop=1
+		while (( $nextLoop == 1 )); do
+			echo -e "\n0) Make Another Clip\n1) Continue to Next Input\n2) Play Clip\n3) Exit"
+			read -p "Type the number corresponding to what you want to do next: " nextStep
+			if (( $nextStep == 0 )); then
+				nextLoop=0
+			elif (( $nextStep == 1 )); then
+				nextLoop=0
+				mainLoop=0
+			elif (( $nextStep == 2 )); then
+				eval "ffplay -i \"$dir$outputPath\""
+			elif (( $nextStep == 3 )); then
+				echo "Exiting"
+				exit 0
+			else
+				echo "Unrecognized Option. Exiting"
+				exit 0
+			fi
+		done
 	done
 done
 exit 0
