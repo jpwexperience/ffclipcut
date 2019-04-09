@@ -371,9 +371,9 @@ for i in "$@"; do
 		elif [[ $subCmdType =~ (srt|ass) ]]; then
 			echo "Slow Burn - External"
 			if (( $audioChoice == -1 )); then
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
 			else
-				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -map 0:a:$audioChoice -map 0:v:$videoChoice -ss $clipStart -t $clipDur -vf subtitles=\"$dir$subCmd\"  -c:a aac -crf $crfIn \"$dir$outputPath\""
+				cmd="ffmpeg -hide_banner -i \"$dir$base.$ext\" -map 0:a:$audioChoice -map 0:v:$videoChoice -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\"  -c:a aac -crf $crfIn \"$dir$outputPath\""
 			fi
 		else
 			echo "Slow Burn - Internal"
