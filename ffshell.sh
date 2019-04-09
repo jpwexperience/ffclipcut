@@ -361,7 +361,7 @@ for i in "$@"; do
 		if (( $crfIn == -1 )); then
 			crfIn=18
 		fi
-		if [[ $subCmdType =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
+		if [[ $subCmd =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
 			echo "Fast Burn"
 			if (( $audioChoice == -1 )); then
 				cmd="ffmpeg -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -filter_complex \"[0:v:$videoChoice][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -an -crf $crfIn \"$dir$outputPath\""
