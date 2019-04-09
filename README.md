@@ -10,7 +10,8 @@ usage: $ bash ffshell.sh input1, input2, ...
 
 Currently output is optimized for .mp4 and .mov formats
 
-Video Stream encoded as H.264 unless -1 crf value is chosen
+Video Stream encoded as H.264 unless crf value of -1 is chosen.
+
 Audio Stream encoded as AAC
 
 Script will search the directory the input file is in for external subtitle files.
