@@ -31,10 +31,7 @@ in_range () {
 	compare=$(($2-1))
 	#echo "$1 and $compare"
 	#Check if input is a number
-	[ -n "$1" ] && ["$1" -eq "$1"] 2>/dev/null
-	if [ $? -ne 0 ]; then
-		inRangeCode=-1
-	elif (( $1 > $compare )) || (( $1 < -1)); then
+	if (( $1 > $compare )) || (( $1 < -1)); then
 		inRangeCode=-1
 	elif (( $1 == -1)); then
 		inRangeCode=-1
@@ -157,7 +154,7 @@ for input in "$@"; do
 			ext=${input##*.}
 			echo -e "\nbase: $base dir: $dir ext: $ext"
 			#get file information, redirect sterr
-			info="$(ffprobe -i "$input" -hide_banner 2>&1)"
+			info="$(ffprobe -analyzeduration 100M -probesize 500K -i "$input" -hide_banner 2>&1)"
 			if (( verboseFl == 1 )); then
 				for i in "$info"; do
 					echo "$input"
@@ -349,7 +346,7 @@ for input in "$@"; do
 		echo -e "Enter CRF Quality Level | Lower Value is Higher Quality\n18-32 is typical range, if burning subtitles may want to use a value around 10"
 		read -p "Use -1 for no re-encoding: "  crfIn
 		read -p "Enter output name with extension | .mkv, .mp4, or .mov is preferred: " outputPath
-		cmd="ffmpeg"
+		cmd="ffmpeg -analyzeduration 100M -probesize 500K"
 		if (( $subtitleChoice >= 0 )); then
 			#echo "Burn subs"
 			subCmd="${subtitleArr[subtitleChoice]}"
