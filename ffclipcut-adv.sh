@@ -351,7 +351,7 @@ for input in "$@"; do
 			fi
 		fi
 		echo -e "\n$cmd\n"
-		#eval $cmd
+		eval $cmd
 		nextLoop=1
 		while (( $nextLoop == 1 )); do
 			echo -e "\n0) Make Another Clip\n1) Continue to Next Input\n2) Play Clip\n3) Exit"
