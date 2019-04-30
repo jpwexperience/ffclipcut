@@ -31,13 +31,15 @@ in_range () {
 	compare=$(($2-1))
 	#echo "$1 and $compare"
 	#Check if input is a number
-	if (( $1 > $compare )) || (( $1 < -1)); then
-		inRangeCode=-1
-	elif (( $1 == -1)); then
+	if (( $1 > $compare )) || (( $1 < -1)) || (( $1 == -1)); then
 		inRangeCode=-1
 	else
-		#echo "ayy there it is"
-		inRangeCode=$1
+		if ! [[ $1 =~ ^[+-]?[0-9]+([.][0-9]+)?$ ]]; then
+			echo "Number not entered. Default to -1"
+			inRangeCode=-1
+		else
+			inRangeCode=$1
+		fi
 	fi
 	#echo "$inRangeCode"
 }
@@ -75,56 +77,9 @@ meta_check () {
 	fi
 }
 
-
-#Would like to incorporate this to cut down on redundancy
-#mainly trying to get functionality working right now
-if [ 1 -eq 0 ]; then
-#$1: Type of Stream
-#$2: User Input
-sLen=0
-stream_check () {
-	sType=$1
-	if [[ sType == "audio" ]]; then
-		sLen=${audioArr[@]}
-	elif [[ sType == "subtitle" ]]; then
-		sLen=${subtitleArr[@]}	
-	else [[ sType == "video" ]]
-		sLen=${videoArr[@]}
-	fi
-	echo -e "\n--${sLen[0]}--\n"
-	if (( $sLen == 0 )); then
-		echo "No Video Tracks"
-		videoChoice=-1
-	elif (( $sLen == 1 )); then
-		#echo "One Video"
-		videoChoice=0
-		#echo "${videoArr[videoChoice]}"
-	else
-		count=0
-		echo -e "\n\t-Video Streams-"
-		for i in "${videoArr[@]}"; do
-			firstChunk=${i%%,*}
-			mainContent=${firstChunk##*:\ }
-			#echo "$firstChunk"
-			echo "$count) | $firstChunk"
-			type=${mainContent##*:}
-			type=${type#\ }
-			type=${type%%\ *}
-			echo "$type"
-			videoTypeArr+=("$type")
-			count=$((count+1))
-		done
-		read -p "Type the number corresponding to the video stream you want to use, followed by [ENTER]: " videoChoice
-		in_range $videoChoice ${#videoArr[@]} 
-		#echo "$inRangeCode"
-		videoChoice=inRangeCode
-	fi
-}
-fi
-
 #set flags for input
-for i in "$@"; do
-	if [[ $i == "-v" ]]; then
+for flag in "$@"; do
+	if [[ $flag == "-v" ]]; then
 		verboseFl=1
 	fi
 done
@@ -156,9 +111,7 @@ for input in "$@"; do
 			#get file information, redirect sterr
 			info="$(ffprobe -analyzeduration 100M -probesize 500K -i "$input" -hide_banner 2>&1)"
 			if (( verboseFl == 1 )); then
-				for i in "$info"; do
-					echo "$input"
-				done
+				echo "$input"
 			fi
 			#echo -e "\n${#info[@]}"
 			IFS='\n' read -ra ADDR <<< "$info"
@@ -171,9 +124,9 @@ for input in "$@"; do
 			done <<< "$info"
 			outLen=${#ffprobeOut[@]}
 			for ((i = 0; i < $outLen; i++)); do
-				#echo "... ${ffprobeOut[i]} ..."
-				#echo "...$i..."
-				#i=$((i-1))
+				if (( verboseFl == 1 )); then
+					echo "${ffprobeOut[i]}"
+				fi
 				line=${ffprobeOut[i]}
 
 				if [[ $line =~ (S|s)"tream"(.*) ]]; then
@@ -227,8 +180,6 @@ for input in "$@"; do
 				videoChoice=0
 				#echo "${videoArr[videoChoice]}"
 			else
-				count=0
-				echo -e "\n\t-Video Streams-"
 				count=0
 				echo -e "\n\t-Video Streams-"
 				#for i in "${videoArr[@]}"; do
@@ -343,13 +294,13 @@ for input in "$@"; do
 		#echo "$clipEnd"
 		echo -e "Enter CRF Quality Level | Lower Value is Higher Quality\n18-32 is typical range, if burning subtitles may want to use a value around 10"
 		read -p "Use -1 for no re-encoding: "  crfIn
-		read -p "Enter output name with extension | .mkv, .mp4, or .mov is preferred: " outputPath
+		read -p "Enter output path with extension | .mkv, .mp4, or .mov is preferred: " outputPath
 		cmd="ffmpeg -analyzeduration 100M -probesize 500K -hide_banner"
 		cmdIn="-i \"$dir$base.$ext\""
 		cmdStart="-ss $clipStart"
 		cmdDur="-t $clipDur"
 		cmdCrf="-crf $crfIn"
-		cmdOut="\"$dir$outputPath\""
+		cmdOut="\"$outputPath\""
 		cmdFiltComp="-filter_complex \"[0:v:$videoChoice][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\""
 		cmdMapV="-map 0:v:$videoChoice" 
 		cmdMapA="-map 0:a:$audioChoice"
