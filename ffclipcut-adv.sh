@@ -321,8 +321,7 @@ for input in "$@"; do
 					#echo "$type"
 					if [[ ${subtitleTypeArr} == "internal" ]]; then
 						subtitleTypeArr[in]="$type"
-				://github.com/darumswizel/ffclipcut.git
-			else	fi
+					fi
 					count=$((count+1))
 				done
 				read -p "Type the number corresponding to the subtitle stream you want to use (-1 for no subtitles), followed by [ENTER]: " subtitleChoice
@@ -352,8 +351,11 @@ for input in "$@"; do
 		cmdCrf="-crf $crfIn"
 		cmdOut="\"$dir$outputPath\""
 		cmdFiltComp="-filter_complex \"[0:v:$videoChoice][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\""
-		cmdMap="-map 0:v:$videoChoice -map 0:a:$audioChoice"
+		cmdMapV="-map 0:v:$videoChoice" 
+		cmdMapA="-map 0:a:$audioChoice"
 		cmdAudio="-c:a aac"
+		cmdVfInt="-vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\""
+		cmdVfExt="-vf subtitles=\"$subCmd\""
 		if (( $subtitleChoice >= 0 )); then
 			#echo "Burn subs"
 			subCmd="${subtitleArr[subtitleChoice]}"
@@ -365,23 +367,23 @@ for input in "$@"; do
 			if [[ $subCmd =~ (.*)(hdmv|dvd_subtitle)(.*) ]]; then
 				echo "Fast Burn"
 				if (( $audioChoice == -1 )); then
-					cmd="$cmd -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -filter_complex \"[0:v:$videoChoice][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -an -crf $crfIn \"$dir$outputPath\""
+					cmd="$cmd $cmdStart $cmdIn $cmdDur $cmdFiltComp $cmdAudio -an $cmdCrf $cmdOut"
 				else
-					cmd="$cmd -ss $clipStart -i \"$dir$base.$ext\" -t $clipDur -filter_complex \"[0:v:$videoChoice][0:s:$subtitleChoice]overlay[v]\" -map \"[v]\" -map 0:a:$audioChoice -c:a aac -crf $crfIn \"$dir$outputPath\""
+					cmd="$cmd $cmdStart $cmdIn $cmdDur $cmdFiltComp $cmdMapA $cmdAudio $cmdCrf $cmdOut"
 				fi
 			elif [[ $subCmdType =~ (srt|ass) ]]; then
 				echo "Slow Burn - External"
 				if (( $audioChoice == -1 )); then
-					cmd="$cmd -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\" -an -crf $crfIn \"$dir$outputPath\""
+					cmd="$cmd $cmdIn $cmdStart $cmdDur $cmdVfExt -an $cmdCrf $cmdOut"
 				else
-					cmd="$cmd -hide_banner -i \"$dir$base.$ext\" -map 0:a:$audioChoice -map 0:v:$videoChoice -ss $clipStart -t $clipDur -vf subtitles=\"$subCmd\"  -c:a aac -crf $crfIn \"$dir$outputPath\""
+					cmd="$cmd $cmdIn $cmdMapV $cmdMapA $cmdStart $cmdDur $cmdVfExt $cmdAudio $cmdCrf $cmdOut"
 				fi
 			else
 				echo "Slow Burn - Internal"
 				if (( $audioChoice == -1 )); then
-					cmd="$cmd -hide_banner -i \"$dir$base.$ext\" -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -an -crf $crfIn \"$dir$outputPath\""
+					cmd="$cmd $cmdIn $cmdStart $cmdDur $cmdVfInt -an $cmdCrf $cmdOut"
 				else
-					cmd="$cmd -hide_banner -i \"$dir$base.$ext\" -map 0:v:$videoChoice -map 0:a:$audioChoice -pix_fmt yuv420p -ss $clipStart -t $clipDur -vf subtitles=\"$dir$base.$ext:si=$subtitleChoice\" -c:a aac -crf $crfIn \"$dir$outputPath\""
+					cmd="$cmd $cmdIn $cmdMapV $cmdMapA $cmdStart $cmdDur $cmdVfInt $cmdAudio $cmdCrf $cmdOut"
 				fi
 
 			fi
@@ -393,7 +395,7 @@ for input in "$@"; do
 				if (( $audioChoice == -1 )); then
 					cmd="$cmd $cmdStart $cmdIn $cmdStart -an $cmdCrf $cmdOut"
 				else
-					cmd="$cmd $cmdStart $cmdIn $cmdDur $cmdMap $cmdAudio $cmdCrf $cmdOut"
+					cmd="$cmd $cmdStart $cmdIn $cmdDur $cmdMapV $cmdMapA $cmdAudio $cmdCrf $cmdOut"
 				fi
 			fi
 		fi
